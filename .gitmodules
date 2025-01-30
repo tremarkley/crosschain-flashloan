@@ -1,12 +1,15 @@
-[submodule "crosschain-flashloan/lib/forge-std"]
-	path = crosschain-flashloan/lib/forge-std
+[submodule "lib/forge-std"]
+	path = lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
-[submodule "crosschain-flashloan/lib/interop-lib"]
-	path = crosschain-flashloan/lib/interop-lib
+[submodule "lib/interop-lib"]
+	path = lib/interop-lib
 	url = https://github.com/ethereum-optimism/interop-lib
-[submodule "crosschain-flashloan/lib/solady"]
-	path = crosschain-flashloan/lib/solady
+[submodule "lib/solady"]
+	path = lib/solady
 	url = https://github.com/vectorized/solady
-[submodule "crosschain-flashloan/lib/openzeppelin-contracts"]
-	path = crosschain-flashloan/lib/openzeppelin-contracts
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "lib/superchain-async"]
+	path = lib/superchain-async
+	url = https://github.com/ben-chain/superchain-async
