@@ -6,6 +6,7 @@ import {FlashLoanVault} from "./FlashLoanVault.sol";
 import {CrosschainFlashLoanToken} from "./CrosschainFlashLoanToken.sol";
 import {ISuperchainTokenBridge} from "interop-lib/interfaces/ISuperchainTokenBridge.sol";
 import {IL2ToL2CrossDomainMessenger} from "interop-lib/interfaces/IL2ToL2CrossDomainMessenger.sol";
+import {AsyncEnabled} from "superchain-async/AsyncEnabled.sol";
 
 /// @title CrosschainFlashLoanBridge
 /// @notice A contract that facilitates cross-chain flash loans using FlashLoanVault

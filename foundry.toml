@@ -5,6 +5,7 @@ libs = ["lib"]
 remappings = [
     "@openzeppelin-contracts/=lib/openzeppelin-contracts/",
     "interop-lib/=lib/interop-lib/",
+    "superchain-async=lib/superchain-async/src",
 ]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
