@@ -83,7 +83,7 @@ contract CrosschainFlashLoanBridge {
             address(this),
             abi.encodeWithSelector(
                 this.executeCrosschainFlashLoan.selector,
-                token,
+                block.chainid,
                 msg.sender,
                 amount,
                 target,

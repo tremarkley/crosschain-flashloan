@@ -89,7 +89,7 @@ describe('CrosschainFlashLoanBridge End-to-End Tests', () => {
         expect(await target.isDeployed(902)).toBe(true)
     })
 
-    it.only('should execute a cross-chain flash loan', async () => {
+    it('should execute a cross-chain flash loan', async () => {
         // Mint tokens for the bridge on chain 901
         const amount = 1000n
         await token.sendTx(901, 'mint', [bridge.address, amount])
@@ -101,8 +101,8 @@ describe('CrosschainFlashLoanBridge End-to-End Tests', () => {
         // Prepare call data for target contract (setValue with value 42)
         const callData = encodeFunctionData({
             abi: TARGET_CONTRACT_ABI,
-            functionName: 'setValue',
-            args: [42n]
+            functionName: 'getValue',
+            args: []
           })
 
         // Initiate flash loan from chain 901 to 902
