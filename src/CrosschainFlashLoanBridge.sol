@@ -75,7 +75,7 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
         CrosschainFlashLoanPromise initiateFlashLoanPromise =
             remote.asyncJustReturnArgumentsBack(destinationChain, msg.sender, amount, target, data);
         // send message to the destination chain to execute the flash loan
-        initiateFlashLoanPromise.then(this.asyncSendExecuteCrosschainFlashLoanToDestinationChain);
+        initiateFlashLoanPromise.then(this.executeCrosschainFlashLoanCallback);
     }
 
     function asyncJustReturnArgumentsBack(
@@ -88,7 +88,7 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
         return (sourceChain, borrower, amount, target, data);
     }
 
-    function asyncSendExecuteCrosschainFlashLoanToDestinationChain(
+    function executeCrosschainFlashLoanCallback(
         uint256 destinationChain,
         address borrower,
         uint256 amount,
@@ -123,12 +123,7 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
         token.approve(address(vault), amount);
 
         // Create flash loan
-        bytes32 loanId = vault.createLoan(
-            address(token),
-            amount,
-            address(this),
-            1 hours
-        );
+        bytes32 loanId = vault.createLoan(address(token), amount, address(this), 1 hours);
 
         // Execute flash loan
         vault.executeFlashLoan(loanId, target, data);
