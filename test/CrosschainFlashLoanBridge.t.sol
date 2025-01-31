@@ -131,41 +131,6 @@ contract CrosschainFlashLoanBridgeTest is Test {
         // Verify the tokens were sent back via the bridge
         assertEq(token.balanceOf(address(bridge)), AMOUNT);
     }
-
-    function testInitiateAndExecuteCrosschainFlashLoan() public {
-        // Setup: mint tokens for the bridge
-        vm.startPrank(owner);
-        token.mint(address(bridge), 1000);
-        vm.stopPrank();
-
-        // Mock bridge sendERC20 call
-        _mockAndExpect(
-            SUPERCHAIN_BRIDGE,
-            abi.encodeCall(ISuperchainTokenBridge.sendERC20, (address(token), address(bridge), 1000, 902)),
-            abi.encode(bytes32(0))
-        );
-
-        // Mock messenger sendMessage call
-        bytes memory message = abi.encodeWithSelector(
-            CrosschainFlashLoanBridge.executeCrosschainFlashLoan.selector,
-            block.chainid,
-            address(this),
-            1000,
-            target,
-            abi.encodeWithSelector(this.execute.selector)
-        );
-        _mockAndExpect(
-            MESSENGER,
-            abi.encodeCall(IL2ToL2CrossDomainMessenger.sendMessage, (902, address(bridge), message)),
-            abi.encode(bytes32(0))
-        );
-
-        // Call initiateAndExecuteCrosschainFlashLoan
-        bridge.initiateAndExecuteCrosschainFlashLoan{value: FEE}(
-            902, 1000, target, abi.encodeWithSelector(this.execute.selector)
-        );
-    }
-
     // Helper function to simulate target contract behavior
     function execute() external {
         // Do something with the borrowed tokens

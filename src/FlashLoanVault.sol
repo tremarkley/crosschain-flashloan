@@ -31,7 +31,7 @@ contract FlashLoanVault {
     error TransferFailed();
     error CallFailed();
     error TimeoutNotElapsed();
-
+    error InsufficientBalance();
     /// @notice Create a new flash loan
     /// @param token The token to be loaned
     /// @param amount The amount to be loaned
@@ -42,6 +42,8 @@ contract FlashLoanVault {
         external
         returns (bytes32 loanId)
     {
+        if (IERC20(token).balanceOf(msg.sender) < amount) revert InsufficientBalance();
+
         // Transfer tokens to this contract
         bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
         if (!success) revert TransferFailed();
