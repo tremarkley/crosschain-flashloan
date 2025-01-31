@@ -76,13 +76,13 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
     }
 
     function asyncJustReturnArgumentsBack(
-        uint256 sourceChain,
+        uint256 destinationChain,
         address borrower,
         uint256 amount,
         address target,
         bytes memory data
     ) external view async returns (uint256, address, uint256, address, bytes memory) {
-        return (sourceChain, borrower, amount, target, data);
+        return (destinationChain, borrower, amount, target, data);
     }
 
     function executeCrosschainFlashLoanCallback(
