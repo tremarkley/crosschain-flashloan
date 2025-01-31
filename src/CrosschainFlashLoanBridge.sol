@@ -84,7 +84,7 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
         uint256 amount,
         address target,
         bytes memory data
-    ) external async returns (uint256, address, uint256, address, bytes memory) {
+    ) external view async returns (uint256, address, uint256, address, bytes memory) {
         return (sourceChain, borrower, amount, target, data);
     }
 
