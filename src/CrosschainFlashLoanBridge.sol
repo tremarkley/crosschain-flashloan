@@ -64,9 +64,6 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
         // Check that sufficient fee was paid
         if (msg.value < flatFee) revert InsufficientFee();
 
-        // Approve bridge to transfer tokens
-        token.approve(address(bridge), amount);
-
         // Send tokens to destination chain
         bridge.sendERC20(address(token), address(this), amount, destinationChain);
 
