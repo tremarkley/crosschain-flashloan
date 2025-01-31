@@ -75,18 +75,7 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
         CrosschainFlashLoanPromise initiateFlashLoanPromise =
             remote.asyncJustReturnArgumentsBack(destinationChain, msg.sender, amount, target, data);
         // send message to the destination chain to execute the flash loan
-        // initiateFlashLoanPromise.then(this.executeCrosschainFlashLoan);
         initiateFlashLoanPromise.then(this.asyncSendExecuteCrosschainFlashLoanToDestinationChain);
-        // emit CrosschainFlashLoanInitiated(destinationChain, msg.sender, amount, msg.value);
-
-        // Return the parameters needed for executeCrosschainFlashLoan
-        // return (
-        //     block.chainid,    // sourceChain
-        //     msg.sender,       // borrower
-        //     amount,          // amount
-        //     target,          // target
-        //     data            // data
-        // );
     }
 
     function asyncJustReturnArgumentsBack(
@@ -141,21 +130,21 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
             1 hours // Long timeout since we need to wait for cross-chain messages
         );
 
-        // // Execute flash loan
-        // vault.executeFlashLoan(loanId, target, data);
+        // Execute flash loan
+        vault.executeFlashLoan(loanId, target, data);
 
-        // // Approve bridge to transfer tokens back
+        // Approve bridge to transfer tokens back
         // token.approve(address(bridge), amount);
 
-        // // Send tokens back to this contract on source chain
-        // bridge.sendERC20(
-        //     address(token),
-        //     address(this), // Send back to this contract on source chain
-        //     amount,
-        //     sourceChain
-        // );
+        // Send tokens back to this contract on source chain
+        bridge.sendERC20(
+            address(token),
+            address(this), // Send back to this contract on source chain
+            amount,
+            sourceChain
+        );
 
-        // emit CrosschainFlashLoanCompleted(sourceChain, borrower, amount);
+        emit CrosschainFlashLoanCompleted(sourceChain, borrower, amount);
     }
 
     /// @notice Allows owner to withdraw accumulated fees

@@ -93,6 +93,8 @@ describe('CrosschainFlashLoanBridge End-to-End Tests', () => {
         // Mint tokens for the bridge on chain 901
         const amount = 1000n
         await token.sendTx(901, 'mint', [bridge.address, amount])
+        const bridgePreBalance = await token.call(901, 'balanceOf', [bridge.address])
+        expect(bridgePreBalance).toBe(amount)
 
         // Get initial value in target contract
         const initialValue = await target.call(902, 'getValue', [])
@@ -101,8 +103,8 @@ describe('CrosschainFlashLoanBridge End-to-End Tests', () => {
         // Prepare call data for target contract (setValue with value 42)
         const callData = encodeFunctionData({
             abi: TARGET_CONTRACT_ABI,
-            functionName: 'getValue',
-            args: []
+            functionName: 'setValue',
+            args: [token.address]
           })
 
         // Initiate flash loan from chain 901 to 902
@@ -118,7 +120,12 @@ describe('CrosschainFlashLoanBridge End-to-End Tests', () => {
 
         // Verify target contract value was updated
         const finalValue = await target.call(902, 'getValue', [])
-        expect(finalValue).toBe(42n)
+        expect(finalValue).toBe(amount)
+
+        // wait for the tokens to be sent back to the bridge
+        await setTimeout(5000)
+        const bridgeBalance = await token.call(901, 'balanceOf', [bridge.address])
+        expect(bridgeBalance).toBe(amount)
     })
 
     it('should fail when fee is insufficient', async () => {
