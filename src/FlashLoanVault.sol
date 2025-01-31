@@ -38,6 +38,7 @@ contract FlashLoanVault {
     /// @param borrower The address that can claim the loan
     /// @param timeout The duration after which the loan can be reclaimed
     /// @return loanId The unique identifier for this loan
+
     function createLoan(address token, uint256 amount, address borrower, uint256 timeout)
         external
         returns (bytes32 loanId)

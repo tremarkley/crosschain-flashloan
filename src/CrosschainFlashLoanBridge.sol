@@ -88,17 +88,18 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
         return (sourceChain, borrower, amount, target, data);
     }
 
-    function asyncSendExecuteCrosschainFlashLoanToDestinationChain(uint256 destinationChain, address borrower, uint256 amount, address target, bytes memory data) external asyncCallback {
+    function asyncSendExecuteCrosschainFlashLoanToDestinationChain(
+        uint256 destinationChain,
+        address borrower,
+        uint256 amount,
+        address target,
+        bytes memory data
+    ) external asyncCallback {
         messenger.sendMessage(
             destinationChain,
             address(this),
             abi.encodeWithSelector(
-                this.executeCrosschainFlashLoan.selector,
-                block.chainid,
-                borrower,
-                amount,
-                target,
-                data
+                this.executeCrosschainFlashLoan.selector, block.chainid, borrower, amount, target, data
             )
         );
     }
@@ -116,7 +117,6 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
         address target,
         bytes memory data
     ) external {
-        // TODO: Only allow calls from the messenger
         require(msg.sender == address(messenger), "Unauthorized");
 
         // give approval to the vault to transfer tokens
@@ -132,9 +132,6 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
 
         // Execute flash loan
         vault.executeFlashLoan(loanId, target, data);
-
-        // Approve bridge to transfer tokens back
-        // token.approve(address(bridge), amount);
 
         // Send tokens back to this contract on source chain
         bridge.sendERC20(
