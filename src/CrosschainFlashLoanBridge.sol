@@ -127,7 +127,7 @@ contract CrosschainFlashLoanBridge is AsyncEnabled {
             address(token),
             amount,
             address(this),
-            1 hours // Long timeout since we need to wait for cross-chain messages
+            1 hours
         );
 
         // Execute flash loan
