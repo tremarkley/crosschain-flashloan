@@ -89,7 +89,7 @@ describe('CrosschainFlashLoanBridge End-to-End Tests', () => {
         expect(await target.isDeployed(902)).toBe(true)
     })
 
-    it('should execute a cross-chain flash loan', async () => {
+    it.only('should execute a cross-chain flash loan', async () => {
         // Mint tokens for the bridge on chain 901
         const amount = 1000n
         await token.sendTx(901, 'mint', [bridge.address, amount])

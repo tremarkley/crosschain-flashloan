@@ -42,4 +42,4 @@ abstract contract SuperchainERC20 is ERC20, IERC7802 {
         return _interfaceId == type(IERC7802).interfaceId || _interfaceId == type(IERC20).interfaceId
             || _interfaceId == type(IERC165).interfaceId;
     }
-} 
+}

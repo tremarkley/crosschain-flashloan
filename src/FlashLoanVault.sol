@@ -20,12 +20,7 @@ contract FlashLoanVault {
     mapping(bytes32 => Loan) public loans;
 
     event LoanCreated(
-        bytes32 indexed loanId,
-        address indexed token,
-        uint256 amount,
-        address owner,
-        address borrower,
-        uint256 timeout
+        bytes32 indexed loanId, address indexed token, uint256 amount, address owner, address borrower, uint256 timeout
     );
     event LoanRepaid(bytes32 indexed loanId, address indexed repayer);
     event LoanClaimed(bytes32 indexed loanId, address indexed borrower);
@@ -43,27 +38,16 @@ contract FlashLoanVault {
     /// @param borrower The address that can claim the loan
     /// @param timeout The duration after which the loan can be reclaimed
     /// @return loanId The unique identifier for this loan
-    function createLoan(
-        address token,
-        uint256 amount,
-        address borrower,
-        uint256 timeout
-    ) external returns (bytes32 loanId) {
+    function createLoan(address token, uint256 amount, address borrower, uint256 timeout)
+        external
+        returns (bytes32 loanId)
+    {
         // Transfer tokens to this contract
         bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
         if (!success) revert TransferFailed();
 
         // Generate loan ID
-        loanId = keccak256(
-            abi.encodePacked(
-                token,
-                amount,
-                msg.sender,
-                borrower,
-                timeout,
-                block.timestamp
-            )
-        );
+        loanId = keccak256(abi.encodePacked(token, amount, msg.sender, borrower, timeout, block.timestamp));
 
         // Store loan details
         loans[loanId] = Loan({
@@ -95,7 +79,7 @@ contract FlashLoanVault {
         emit LoanClaimed(loanId, loan.borrower);
 
         // Make the arbitrary call
-        (success, ) = target.call(data);
+        (success,) = target.call(data);
         if (!success) revert CallFailed();
 
         // Check that loan was repaid
@@ -125,4 +109,4 @@ contract FlashLoanVault {
         loan.isActive = false;
         emit LoanReclaimed(loanId, msg.sender);
     }
-} 
+}

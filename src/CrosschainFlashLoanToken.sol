@@ -32,4 +32,4 @@ contract CrosschainFlashLoanToken is SuperchainERC20, Ownable {
     function burn(address from_, uint256 amount_) external onlyOwner {
         _burn(from_, amount_);
     }
-} 
+}

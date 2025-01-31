@@ -48,7 +48,7 @@ contract FlashLoanVaultTest is Test {
     function test_CreateLoan() public {
         vm.startPrank(owner);
         bytes32 loanId = vault.createLoan(address(token), AMOUNT, address(borrower), TIMEOUT);
-        
+
         (
             address loanToken,
             uint256 loanAmount,
@@ -73,11 +73,7 @@ contract FlashLoanVaultTest is Test {
         vm.stopPrank();
 
         vm.startPrank(address(borrower));
-        vault.executeFlashLoan(
-            loanId, 
-            address(borrower), 
-            abi.encodeWithSelector(MockBorrower.execute.selector)
-        );
+        vault.executeFlashLoan(loanId, address(borrower), abi.encodeWithSelector(MockBorrower.execute.selector));
         assertEq(token.balanceOf(owner), AMOUNT);
         vm.stopPrank();
     }
@@ -107,11 +103,7 @@ contract FlashLoanVaultTest is Test {
         vm.warp(block.timestamp + TIMEOUT + 1);
 
         vm.startPrank(address(borrower));
-        vault.executeFlashLoan(
-            loanId, 
-            address(borrower), 
-            abi.encodeWithSelector(MockBorrower.execute.selector)
-        );
+        vault.executeFlashLoan(loanId, address(borrower), abi.encodeWithSelector(MockBorrower.execute.selector));
     }
 
     function testFail_ReclaimBeforeTimeout() public {
@@ -132,10 +124,6 @@ contract FlashLoanVaultTest is Test {
 
         // Try to execute from unauthorized address
         vm.startPrank(makeAddr("unauthorized"));
-        vault.executeFlashLoan(
-            loanId, 
-            address(borrower), 
-            abi.encodeWithSelector(MockBorrower.execute.selector)
-        );
+        vault.executeFlashLoan(loanId, address(borrower), abi.encodeWithSelector(MockBorrower.execute.selector));
     }
-} 
+}

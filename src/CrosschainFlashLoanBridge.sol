@@ -8,9 +8,19 @@ import {ISuperchainTokenBridge} from "interop-lib/interfaces/ISuperchainTokenBri
 import {IL2ToL2CrossDomainMessenger} from "interop-lib/interfaces/IL2ToL2CrossDomainMessenger.sol";
 import {AsyncEnabled} from "superchain-async/AsyncEnabled.sol";
 
+interface RemoteCrosschainFlashLoanBridge {
+    function asyncJustReturnArgumentsBack(uint256 destinationChain, uint256 amount, address target, bytes calldata data)
+        external
+        returns (CrosschainFlashLoanPromise);
+}
+
+interface CrosschainFlashLoanPromise {
+    function then(function(uint256, address, uint256, address, bytes memory) external) external;
+}
+
 /// @title CrosschainFlashLoanBridge
 /// @notice A contract that facilitates cross-chain flash loans using FlashLoanVault
-contract CrosschainFlashLoanBridge {
+contract CrosschainFlashLoanBridge is AsyncEnabled {
     // The token used for flash loans
     CrosschainFlashLoanToken public immutable token;
     // The vault on this chain
@@ -18,35 +28,24 @@ contract CrosschainFlashLoanBridge {
     // The bridge for cross-chain transfers
     ISuperchainTokenBridge public constant bridge = ISuperchainTokenBridge(0x4200000000000000000000000000000000000028);
     // The messenger for cross-chain messages
-    IL2ToL2CrossDomainMessenger public constant messenger = IL2ToL2CrossDomainMessenger(0x4200000000000000000000000000000000000023);
+    IL2ToL2CrossDomainMessenger public constant messenger =
+        IL2ToL2CrossDomainMessenger(0x4200000000000000000000000000000000000023);
     // Fee charged for cross-chain flash loans
     uint256 public immutable flatFee;
     // Owner who can withdraw fees
     address public immutable owner;
 
     event CrosschainFlashLoanInitiated(
-        uint256 indexed destinationChain,
-        address indexed borrower,
-        uint256 amount,
-        uint256 fee
+        uint256 indexed destinationChain, address indexed borrower, uint256 amount, uint256 fee
     );
 
-    event CrosschainFlashLoanCompleted(
-        uint256 indexed sourceChain,
-        address indexed borrower,
-        uint256 amount
-    );
+    event CrosschainFlashLoanCompleted(uint256 indexed sourceChain, address indexed borrower, uint256 amount);
 
     error InsufficientFee();
     error TransferFailed();
     error CallFailed();
 
-    constructor(
-        address _token,
-        address _vault,
-        uint256 _flatFee,
-        address _owner
-    ) {
+    constructor(address _token, address _vault, uint256 _flatFee, address _owner) {
         token = CrosschainFlashLoanToken(_token);
         vault = FlashLoanVault(_vault);
         flatFee = _flatFee;
@@ -58,12 +57,10 @@ contract CrosschainFlashLoanBridge {
     /// @param amount The amount to borrow
     /// @param target The contract to call on the destination chain
     /// @param data The calldata to execute on the target contract
-    function initiateCrosschainFlashLoan(
-        uint256 destinationChain,
-        uint256 amount,
-        address target,
-        bytes calldata data
-    ) external payable {
+    function initiateCrosschainFlashLoan(uint256 destinationChain, uint256 amount, address target, bytes calldata data)
+        external
+        payable
+    {
         // Check that sufficient fee was paid
         if (msg.value < flatFee) revert InsufficientFee();
 
@@ -71,28 +68,28 @@ contract CrosschainFlashLoanBridge {
         token.approve(address(bridge), amount);
 
         // Send tokens to destination chain
-        bridge.sendERC20(
-            address(token),
-            address(this),
-            amount,
-            destinationChain
-        );
+        bridge.sendERC20(address(token), address(this), amount, destinationChain);
 
-        // Send message to destination chain to execute flash loan
-        messenger.sendMessage(
-            destinationChain,
-            address(this),
-            abi.encodeWithSelector(
-                this.executeCrosschainFlashLoan.selector,
-                block.chainid,
-                msg.sender,
-                amount,
-                target,
-                data
-            )
-        );
+        // emit CrosschainFlashLoanInitiated(destinationChain, msg.sender, amount, msg.value);
 
-        emit CrosschainFlashLoanInitiated(destinationChain, msg.sender, amount, msg.value);
+        // Return the parameters needed for executeCrosschainFlashLoan
+        // return (
+        //     block.chainid,    // sourceChain
+        //     msg.sender,       // borrower
+        //     amount,          // amount
+        //     target,          // target
+        //     data            // data
+        // );
+    }
+
+    function asyncJustReturnArgumentsBack(
+        uint256 sourceChain,
+        address borrower,
+        uint256 amount,
+        address target,
+        bytes memory data
+    ) external async returns (uint256, address, uint256, address, bytes memory) {
+        return (sourceChain, borrower, amount, target, data);
     }
 
     /// @notice Executes the flash loan on the destination chain and returns tokens
@@ -106,8 +103,8 @@ contract CrosschainFlashLoanBridge {
         address borrower,
         uint256 amount,
         address target,
-        bytes calldata data
-    ) external {
+        bytes memory data
+    ) external asyncCallback {
         // Only allow calls from the messenger
         require(msg.sender == address(messenger), "Unauthorized");
 
@@ -136,10 +133,28 @@ contract CrosschainFlashLoanBridge {
         emit CrosschainFlashLoanCompleted(sourceChain, borrower, amount);
     }
 
+    function initiateAndExecuteCrosschainFlashLoan(
+        uint256 destinationChain,
+        uint256 amount,
+        address target,
+        bytes calldata data
+    ) external payable {
+        // if (msg.value < flatFee) revert InsufficientFee();
+
+        // RemoteCrosschainFlashLoanBridge remote = RemoteCrosschainFlashLoanBridge(
+        //     getAsyncProxy(address(this), destinationChain)
+        // );
+        RemoteCrosschainFlashLoanBridge remote =
+            RemoteCrosschainFlashLoanBridge(getAsyncProxy(address(this), destinationChain));
+        CrosschainFlashLoanPromise initiateFlashLoanPromise =
+            remote.asyncJustReturnArgumentsBack(destinationChain, amount, target, data);
+        initiateFlashLoanPromise.then(this.executeCrosschainFlashLoan);
+    }
+
     /// @notice Allows owner to withdraw accumulated fees
     function withdrawFees() external {
         require(msg.sender == owner, "Not authorized");
-        (bool success, ) = owner.call{value: address(this).balance}("");
+        (bool success,) = owner.call{value: address(this).balance}("");
         if (!success) revert TransferFailed();
     }
-} 
+}

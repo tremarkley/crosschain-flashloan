@@ -11,4 +11,4 @@ contract TargetContract {
     function getValue() external view returns (uint256) {
         return value;
     }
-} 
+}

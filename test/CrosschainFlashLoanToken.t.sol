@@ -18,7 +18,7 @@ contract CrosschainFlashLoanTokenTest is Test {
         owner = makeAddr("owner");
         user1 = makeAddr("user1");
         user2 = makeAddr("user2");
-        
+
         // Deploy token with owner
         vm.prank(owner);
         token = new CrosschainFlashLoanToken(owner);
@@ -151,4 +151,4 @@ contract CrosschainFlashLoanTokenTest is Test {
         vm.expectRevert();
         token.transferFrom(user1, user2, 50);
     }
-} 
+}
