@@ -100,7 +100,7 @@ describe('CrosschainFlashLoanBridge End-to-End Tests', () => {
         const initialValue = await target.call(902, 'getValue', [])
         expect(initialValue).toBe(0n)
 
-        // Prepare call data for target contract (setValue with value 42)
+        // calldata that should be exectuted when the flash loan is executed
         const callData = encodeFunctionData({
             abi: TARGET_CONTRACT_ABI,
             functionName: 'setValue',
